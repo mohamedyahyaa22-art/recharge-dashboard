@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recharge Executive Dashboard</title>
+<style>
+:root{
+  --bg:#07111f;--panel:#0c192a;--panel2:#101f33;--line:#20314a;--text:#eef5ff;
+  --muted:#8fa3bc;--cyan:#41d9ff;--blue:#4c7dff;--green:#35d39a;--red:#ff6d7a;
+  --orange:#ffb65c;--purple:#a983ff;--shadow:0 14px 34px rgba(0,0,0,.24)
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 12% 0%,#102a48 0,#07111f 34%),var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+.shell{max-width:1540px;margin:auto;padding:22px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+.title h1{margin:0;font-size:24px}.title p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.badge{border:1px solid var(--line);background:#0a1728;border-radius:999px;padding:8px 12px;color:#a7bdd8;font-size:12px}
+.filters{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:10px;background:rgba(12,25,42,.86);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:14px}
+input,select{width:100%;background:#081525;color:var(--text);border:1px solid #263a55;border-radius:10px;padding:10px 11px;outline:none}
+input:focus,select:focus{border-color:var(--cyan)}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:14px}
+.card{background:linear-gradient(180deg,rgba(16,31,51,.96),rgba(10,24,41,.96));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.kpi{padding:15px 16px;min-height:110px}
+.kpi .label{font-size:12px;color:var(--muted);margin-bottom:11px}.kpi .value{font-size:25px;font-weight:750;letter-spacing:-.5px}.kpi .sub{margin-top:8px;font-size:11px;color:var(--muted)}
+.good{color:var(--green)!important}.bad{color:var(--red)!important}
+.grid2{display:grid;grid-template-columns:1.45fr 1fr;gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.panel{padding:17px;min-height:300px}.panel h2{font-size:14px;margin:0 0 4px}.panel .hint{color:var(--muted);font-size:11px;margin-bottom:15px}
+.monthbars{display:flex;height:210px;align-items:flex-end;gap:44px;padding:12px 34px 0;border-bottom:1px solid var(--line)}
+.monthcol{flex:1;text-align:center}.bar{width:72%;margin:auto;border-radius:9px 9px 3px 3px;min-height:4px;transition:.25s}
+.bar.last{background:linear-gradient(180deg,#667a9a,#334967)}.bar.this{background:linear-gradient(180deg,var(--cyan),var(--blue))}
+.barval{font-size:12px;margin-bottom:7px;color:#cfe4ff}.barlabel{font-size:12px;color:var(--muted);margin-top:8px}
+.list{display:flex;flex-direction:column;gap:10px}.itemhead{display:flex;justify-content:space-between;gap:12px;font-size:12px}.itemhead span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{height:8px;border-radius:99px;background:#14243a;overflow:hidden;margin-top:5px}.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.fill.green{background:linear-gradient(90deg,#1fa276,var(--green))}.fill.purple{background:linear-gradient(90deg,#7559cc,var(--purple))}
+.donutwrap{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center}
+.donut{width:142px;height:142px;border-radius:50%;position:relative;margin:auto}.donut:after{content:"";position:absolute;inset:25px;border-radius:50%;background:#0d1b2d}.donutcenter{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;font-size:12px;text-align:center;color:#cfe0f5;pointer-events:none}
+.legend{display:flex;flex-direction:column;gap:8px;font-size:12px}.legendrow{display:flex;justify-content:space-between;gap:10px;color:#c4d4e8}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:820px}th,td{padding:10px 11px;border-bottom:1px solid #192a41;text-align:left;font-size:12px}th{position:sticky;top:0;background:#102038;color:#9fb3cb;font-weight:600}tbody tr:hover{background:#102239}td.num{text-align:right;font-variant-numeric:tabular-nums}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.toolbar select{width:auto;min-width:165px}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px}.pager button{background:#11233a;color:#dcecff;border:1px solid #29415f;border-radius:8px;padding:7px 10px;cursor:pointer}.pager button:disabled{opacity:.4;cursor:not-allowed}
+.empty{color:var(--muted);padding:30px;text-align:center}
+.footer{color:#6f849f;font-size:11px;text-align:right;padding:6px 2px 18px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2,.grid3{grid-template-columns:1fr}.filters{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.shell{padding:12px}.topbar{align-items:flex-start;flex-direction:column}.kpis{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}.donutwrap{grid-template-columns:1fr}.kpi .value{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="title"><h1>Recharge Executive Dashboard</h1><p>Users • Recharge • Source • VIP • Country performance</p></div>
+    <div class="badge" id="scopeBadge">Google Sheet snapshot • Dashboard tab</div>
+  </div>
+
+  <div class="filters">
+    <input id="search" placeholder="Search UID or UserName">
+    <select id="country"><option value="">All Countries</option></select>
+    <select id="source"><option value="">All Sources</option></select>
+    <select id="vip"><option value="">All VIP Levels</option></select>
+    <select id="gender"><option value="">All Genders</option></select>
+  </div>
+
+  <div class="kpis">
+    <div class="card kpi"><div class="label">ALL-TIME RECHARGE</div><div class="value" id="kAll">$0</div><div class="sub">Total historical recharge</div></div>
+    <div class="card kpi"><div class="label">THIS MONTH</div><div class="value" id="kThis">$0</div><div class="sub" id="kThisSub">Current month total</div></div>
+    <div class="card kpi"><div class="label">LAST MONTH</div><div class="value" id="kLast">$0</div><div class="sub">Previous month total</div></div>
+    <div class="card kpi"><div class="label">YESTERDAY</div><div class="value" id="kYesterday">$0</div><div class="sub" id="kActive">0 active rechargers</div></div>
+    <div class="card kpi"><div class="label">TOTAL USERS</div><div class="value" id="kUsers">0</div><div class="sub">Distinct UID count</div></div>
+    <div class="card kpi"><div class="label">MoM GROWTH</div><div class="value" id="kGrowth">0%</div><div class="sub">This month vs last month</div></div>
+  </div>
+
+  <div class="grid2">
+    <section class="card panel">
+      <h2>Recharge Comparison</h2><div class="hint">This Month vs Last Month • responds to filters</div>
+      <div class="monthbars">
+        <div class="monthcol"><div class="barval" id="vLast">$0</div><div class="bar last" id="bLast"></div><div class="barlabel">Last Month</div></div>
+        <div class="monthcol"><div class="barval" id="vThis">$0</div><div class="bar this" id="bThis"></div><div class="barlabel">This Month</div></div>
+      </div>
+    </section>
+    <section class="card panel">
+      <h2>Recharge by Source</h2><div class="hint">This month contribution</div>
+      <div class="list" id="sourceList"></div>
+    </section>
+  </div>
+
+  <div class="grid3">
+    <section class="card panel">
+      <div class="toolbar"><div><h2>Top Rechargers</h2><div class="hint">Ranked users</div></div>
+        <select id="metric"><option value="thismonth">This Month</option><option value="yesterday">Yesterday</option><option value="alltime">All Time</option><option value="lastmonth">Last Month</option></select>
+      </div>
+      <div class="tablewrap"><table><thead><tr><th>#</th><th>UID</th><th>User</th><th>Country</th><th>VIP</th><th style="text-align:right">Recharge</th></tr></thead><tbody id="topBody"></tbody></table></div>
+    </section>
+    <section class="card panel">
+      <h2>VIP Distribution</h2><div class="hint">Users by VIP level</div>
+      <div class="donutwrap"><div style="position:relative"><div class="donut" id="vipDonut"></div><div class="donutcenter" id="donutCenter"></div></div><div class="legend" id="vipLegend"></div></div>
+    </section>
+    <section class="card panel">
+      <h2>Top Countries</h2><div class="hint">This month recharge</div>
+      <div class="list" id="countryList"></div>
+    </section>
+  </div>
+
+  <section class="card panel">
+    <div class="toolbar"><div><h2>User Explorer</h2><div class="hint" id="tableHint">Filtered users</div></div><div class="badge" id="filterBadge">All data</div></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>UID</th><th>UserName</th><th>Country</th><th>Source</th><th>VIP</th><th>Device</th><th style="text-align:right">Yesterday</th><th style="text-align:right">This Month</th><th style="text-align:right">Last Month</th><th style="text-align:right">All Time</th></tr></thead>
+      <tbody id="userBody"></tbody>
+    </table></div>
+    <div class="pager"><button id="prev">Previous</button><span class="badge" id="pageInfo">1 / 1</span><button id="next">Next</button></div>
+  </section>
+
+  <div class="footer">Built from the “Dashboard” tab • full 4,232-user dataset embedded in this version</div>
+</div>
+
+<script>
+let DATA = [];
+const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n||0);
+const compactMoney = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',notation:'compact',maximumFractionDigits:1}).format(n||0);
+const num = n => new Intl.NumberFormat('en-US').format(n||0);
+let page=1, pageSize=20, filtered=DATA.slice();
+
+const els = Object.fromEntries(['search','country','source','vip','gender','metric'].map(id=>[id,document.getElementById(id)]));
+
+function unique(field){return [...new Set(DATA.map(d=>d[field]).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));}
+function populate(id, field){
+  const select=document.getElementById(id);
+  unique(field).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;select.appendChild(o);});
+}
+function populateFilters(){
+  ['country','source','vip','gender'].forEach(id=>{
+    const s=document.getElementById(id);
+    while(s.options.length>1) s.remove(1);
+  });
+  populate('country','country'); populate('source','source'); populate('vip','vip'); populate('gender','gender');
+}
+
+function sum(arr,key){return arr.reduce((a,d)=>a+(+d[key]||0),0)}
+function groupSum(arr,field,metric){
+  const m=new Map();
+  arr.forEach(d=>m.set(d[field]||'Unknown',(m.get(d[field]||'Unknown')||0)+(+d[metric]||0)));
+  return [...m.entries()].sort((a,b)=>b[1]-a[1]);
+}
+function groupCount(arr,field){
+  const m=new Map();
+  arr.forEach(d=>m.set(d[field]||'Unknown',(m.get(d[field]||'Unknown')||0)+1));
+  return [...m.entries()].sort((a,b)=>b[1]-a[1]);
+}
+function apply(){
+  const q=els.search.value.trim().toLowerCase();
+  filtered=DATA.filter(d=>{
+    if(q && !(d.uid.toLowerCase().includes(q)||d.name.toLowerCase().includes(q))) return false;
+    if(els.country.value && d.country!==els.country.value) return false;
+    if(els.source.value && d.source!==els.source.value) return false;
+    if(els.vip.value && d.vip!==els.vip.value) return false;
+    if(els.gender.value && d.gender!==els.gender.value) return false;
+    return true;
+  });
+  page=1; render();
+}
+['search','country','source','vip','gender'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',apply));
+els.metric.addEventListener('change',renderTop);
+
+function renderKPIs(){
+  const all=sum(filtered,'alltime'), th=sum(filtered,'thismonth'), lm=sum(filtered,'lastmonth'), yd=sum(filtered,'yesterday');
+  const u=new Set(filtered.map(d=>d.uid)).size, active=filtered.filter(d=>d.yesterday>0).length;
+  const growth=lm?((th-lm)/lm*100):0;
+  document.getElementById('kAll').textContent=money(all);
+  document.getElementById('kThis').textContent=money(th);
+  document.getElementById('kLast').textContent=money(lm);
+  document.getElementById('kYesterday').textContent=money(yd);
+  document.getElementById('kUsers').textContent=num(u);
+  const kg=document.getElementById('kGrowth');kg.textContent=(growth>=0?'+':'')+growth.toFixed(1)+'%';kg.className='value '+(growth>=0?'good':'bad');
+  document.getElementById('kActive').textContent=num(active)+' active rechargers';
+  document.getElementById('kThisSub').textContent=(growth>=0?'▲ ':'▼ ')+Math.abs(growth).toFixed(1)+'% vs last month';
+  document.getElementById('kThisSub').className='sub '+(growth>=0?'good':'bad');
+  const mx=Math.max(th,lm,1);
+  document.getElementById('bThis').style.height=Math.max(4,th/mx*175)+'px';
+  document.getElementById('bLast').style.height=Math.max(4,lm/mx*175)+'px';
+  document.getElementById('vThis').textContent=compactMoney(th);document.getElementById('vLast').textContent=compactMoney(lm);
+}
+
+function renderBarList(target, pairs, cls=''){
+  const root=document.getElementById(target);root.innerHTML='';
+  const top=pairs.slice(0,7), max=top[0]?.[1]||1;
+  if(!top.length){root.innerHTML='<div class="empty">No data</div>';return;}
+  top.forEach(([k,v])=>{
+    const wrap=document.createElement('div');
+    wrap.innerHTML=`<div class="itemhead"><span>${escapeHtml(k)}</span><span>${compactMoney(v)}</span></div><div class="track"><div class="fill ${cls}" style="width:${Math.max(2,v/max*100)}%"></div></div>`;
+    root.appendChild(wrap);
+  });
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+
+function renderTop(){
+  const metric=els.metric.value, rows=filtered.slice().sort((a,b)=>b[metric]-a[metric]).slice(0,10);
+  const body=document.getElementById('topBody');body.innerHTML='';
+  rows.forEach((d,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td>${escapeHtml(d.uid)}</td><td>${escapeHtml(d.name||'-')}</td><td>${escapeHtml(d.country)}</td><td>${escapeHtml(d.vip)}</td><td class="num">${money(d[metric])}</td>`;
+    body.appendChild(tr);
+  });
+  if(!rows.length) body.innerHTML='<tr><td colspan="6" class="empty">No matching users</td></tr>';
+}
+
+const palette=['#41d9ff','#4c7dff','#35d39a','#ffb65c','#a983ff','#ff6d7a','#70c1b3','#c1e1ff'];
+function renderVIP(){
+  const pairs=groupCount(filtered,'vip').slice(0,8), total=filtered.length||1;
+  let acc=0, stops=[];
+  pairs.forEach((p,i)=>{const pct=p[1]/total*100;stops.push(`${palette[i%palette.length]} ${acc}% ${acc+pct}%`);acc+=pct;});
+  document.getElementById('vipDonut').style.background=stops.length?`conic-gradient(${stops.join(',')})`:'#14243a';
+  document.getElementById('donutCenter').innerHTML=`<b>${num(filtered.length)}</b><br>users`;
+  const leg=document.getElementById('vipLegend');leg.innerHTML='';
+  pairs.forEach((p,i)=>{
+    const row=document.createElement('div');row.className='legendrow';
+    row.innerHTML=`<span><i class="dot" style="background:${palette[i%palette.length]}"></i>${escapeHtml(p[0])}</span><span>${num(p[1])}</span>`;
+    leg.appendChild(row);
+  });
+}
+
+function renderTable(){
+  const pages=Math.max(1,Math.ceil(filtered.length/pageSize));if(page>pages)page=pages;
+  const start=(page-1)*pageSize, rows=filtered.slice(start,start+pageSize);
+  const body=document.getElementById('userBody');body.innerHTML='';
+  rows.forEach(d=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${escapeHtml(d.uid)}</td><td>${escapeHtml(d.name||'-')}</td><td>${escapeHtml(d.country)}</td><td>${escapeHtml(d.source)}</td><td>${escapeHtml(d.vip)}</td><td>${escapeHtml(d.device)}</td><td class="num">${money(d.yesterday)}</td><td class="num">${money(d.thismonth)}</td><td class="num">${money(d.lastmonth)}</td><td class="num">${money(d.alltime)}</td>`;
+    body.appendChild(tr);
+  });
+  if(!rows.length)body.innerHTML='<tr><td colspan="10" class="empty">No matching users</td></tr>';
+  document.getElementById('pageInfo').textContent=`${page} / ${pages}`;
+  document.getElementById('prev').disabled=page<=1;document.getElementById('next').disabled=page>=pages;
+  document.getElementById('tableHint').textContent=`${num(filtered.length)} filtered users`;
+  document.getElementById('filterBadge').textContent=filtered.length===DATA.length?'All data':`${num(filtered.length)} / ${num(DATA.length)} users`;
+}
+document.getElementById('prev').addEventListener('click',()=>{if(page>1){page--;renderTable()}});
+document.getElementById('next').addEventListener('click',()=>{const pages=Math.ceil(filtered.length/pageSize);if(page<pages){page++;renderTable()}});
+
+function render(){
+  renderKPIs();
+  renderBarList('sourceList',groupSum(filtered,'source','thismonth'));
+  renderBarList('countryList',groupSum(filtered,'country','thismonth'),'green');
+  renderVIP();renderTop();renderTable();
+}
+
+function parseNum(v){
+  if(v===null || v===undefined || v==='') return 0;
+  if(typeof v==='number') return v;
+  return Number(String(v).replace(/[$,]/g,'').trim()) || 0;
+}
+
+function loadSheetData(rows){
+  try {
+    if(!Array.isArray(rows) || rows.length < 2) throw new Error('No data received from Google Sheet');
+
+    const headers = rows[0].map(h => String(h || '').trim());
+    const findCol = (...names) => {
+      for (const name of names) {
+        const idx = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+        if(idx >= 0) return idx;
+      }
+      return -1;
+    };
+
+    const c = {
+      uid: findCol('UID'),
+      name: findCol('UserName','Username'),
+      country: findCol('Country'),
+      source: findCol('Source'),
+      identity: findCol('Identity'),
+      gender: findCol('Gender'),
+      vip: findCol('VIP level','VIP Level','VIP'),
+      device: findCol('Device type','Device Type','Device'),
+      yesterday: findCol('Yesterday $ Total Recharge'),
+      alltime: findCol('All Time $ Total Recharge'),
+      thismonth: findCol('This Month $ Total Recharge'),
+      lastmonth: findCol('Last Month $ Total Recharge')
+    };
+
+    DATA = rows.slice(1).filter(r => c.uid >= 0 && r[c.uid] !== '' && r[c.uid] != null).map(r => ({
+      uid: String(r[c.uid] ?? ''),
+      name: c.name>=0 ? String(r[c.name] ?? '') : '',
+      country: c.country>=0 ? String(r[c.country] || 'Unknown') : 'Unknown',
+      source: c.source>=0 ? String(r[c.source] || 'Unknown') : 'Unknown',
+      identity: c.identity>=0 ? String(r[c.identity] || 'Unknown') : 'Unknown',
+      gender: c.gender>=0 ? String(r[c.gender] || 'Unknown') : 'Unknown',
+      vip: c.vip>=0 ? String(r[c.vip] || 'No VIP') : 'No VIP',
+      device: c.device>=0 ? String(r[c.device] || 'Unknown') : 'Unknown',
+      yesterday: c.yesterday>=0 ? parseNum(r[c.yesterday]) : 0,
+      alltime: c.alltime>=0 ? parseNum(r[c.alltime]) : 0,
+      thismonth: c.thismonth>=0 ? parseNum(r[c.thismonth]) : 0,
+      lastmonth: c.lastmonth>=0 ? parseNum(r[c.lastmonth]) : 0
+    }));
+
+    filtered = DATA.slice();
+    populateFilters();
+    document.getElementById('scopeBadge').textContent = 'LIVE • Google Sheet • Dashboard tab';
+    const footer = document.querySelector('.footer');
+    if(footer) footer.textContent = `Live from Google Sheet • ${DATA.length.toLocaleString('en-US')} users loaded`;
+    render();
+  } catch(err) {
+    document.getElementById('scopeBadge').textContent = 'Live data error';
+    console.error(err);
+    alert('Could not load Google Sheet data. Please refresh or check the Apps Script deployment.');
+  }
+}
+
+(function loadLiveData(){
+  const s=document.createElement('script');
+  s.src='https://script.google.com/macros/s/AKfycbz66WoRdF4hp3GNR-gePAigEZzQOF_Cy8BNQep7TB-8cxiYfmQ1WOs71bBhvwgc9ly_XQ/exec?callback=loadSheetData&t='+Date.now();
+  s.async=true;
+  s.onerror=()=>{
+    document.getElementById('scopeBadge').textContent='Connection error';
+    alert('Could not connect to Google Sheet.');
+  };
+  document.body.appendChild(s);
+})();
+</script>
+</body></html>
